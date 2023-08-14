@@ -1,6 +1,7 @@
 '''
-Title: checking required items, defined projection, topology and geometry, attributes, field names and file size using arcpy-python, 
-This script was written for ArcGIS Desktop (version 10.8.1), and requires Python 2.7
+Title: Checking required items, defined projection, topology and geometry, attributes, field names and file size using arcpy-python for both feature classes
+in the geodatabase, and also shapefiles. 
+Software requirements: ArcGIS Desktop (version 10.8.2) & Python 2.7
 Created by: Shahriar Rahman
 Email: shahriar.env12@gmail.com
 '''
