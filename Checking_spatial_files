@@ -1,0 +1,82 @@
+'''
+Title: checking required items, defined projection, topology and geometry, attributes, field names and file size using arcpy-python, 
+This script was written for ArcGIS Desktop (version 10.8.1), and requires Python 2.7
+Created by: Shahriar Rahman
+Email: shahriar.env12@gmail.com
+'''
+
+import arcpy
+import os
+
+arcpy.env.overwriteOutput = True
+
+def check_shapefile_issues(shapefile_path, report_path):
+    with open(report_path, 'w') as report:
+        report.write("Checking: {}\n".format(os.path.basename(shapefile_path)))
+        report.write("-" * 50 + "\n")
+
+        # Check all the associated files for the Shapefile(s)
+        mandatory_extensions = ['.shp', '.shx', '.dbf']
+        for ext in mandatory_extensions:
+            if not arcpy.Exists(shapefile_path.replace('.shp', ext)):
+                report.write("Missing mandatory file: {}\n".format(shapefile_path.replace('.shp', ext)))
+
+        # Check the projection system
+        if not arcpy.Exists(shapefile_path.replace('.shp', '.prj')):
+            report.write("Warning: No .prj file found. The shapefile might not have a defined projection.\n")
+
+        # Checking topology
+        check_geometry_result = arcpy.CheckGeometry_management(shapefile_path, "in_memory/checkgeom_result")
+        
+        # Checking geometry issues
+        fields = [f.name for f in arcpy.ListFields(check_geometry_result)]
+        if "Shape" in fields:
+            for row in arcpy.da.SearchCursor(check_geometry_result, ["Shape"]):
+                report.write("Geometry issue detected at {}\n".format(row[0].centroid))
+        else:
+            report.write("No geometry issues detected.\n")
+
+        # Check attributes
+        feature_count = int(arcpy.GetCount_management(shapefile_path).getOutput(0))
+        attribute_count = sum(1 for row in arcpy.SearchCursor(shapefile_path))
+        if feature_count != attribute_count:
+            report.write("Mismatch between features and attributes detected.\n")
+
+        # Check for field name length (only for shapefiles)
+        fields = arcpy.ListFields(shapefile_path)
+        for field in fields:
+            if len(field.name) > 10:
+                report.write("Field name '{}' exceeds 10 characters.\n".format(field.name))
+
+        # Check for file size (only for the shapefiles)
+        if os.path.getsize(shapefile_path) > 2 * (10**9):
+            report.write("Warning: Shapefile size exceeds 2GB.\n")
+
+        report.write("\n")
+
+def check_directory_for_shapefiles(directory_path):
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for filename in filenames:
+            if filename.endswith('.shp'):
+                shapefile_path = os.path.join(dirpath, filename)
+                report_path = os.path.join(dirpath, "{}_check_report.txt".format(filename))
+                check_shapefile_issues(shapefile_path, report_path)
+
+def check_geodatabase_for_feature_classes(gdb_path):
+    arcpy.env.workspace = gdb_path
+    feature_classes = arcpy.ListFeatureClasses()
+    for fc in feature_classes:
+        report_path = os.path.join(gdb_path, "{}_check_report.txt".format(fc))
+        check_shapefile_issues(fc, report_path)
+
+def check_directory(directory_path):
+    for dirpath, dirnames, filenames in os.walk(directory_path):
+        for dirname in dirnames:
+            if dirname.endswith('.gdb'):
+                check_geodatabase_for_feature_classes(os.path.join(dirpath, dirname))
+        check_directory_for_shapefiles(dirpath)
+
+root_directory_path = r"Your Directory" # Replace with your directory path
+check_directory(root_directory_path)
+
+print "Reports generated in the respective folders."
