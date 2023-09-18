@@ -1,4 +1,4 @@
-'''Title: Getting band information using ArcPy (in ArcGIS Pro) using Python
+'''Title: Getting band information using ArcPy (ArcGIS Pro v3.1.0) using Python
 Created by: Shahriar Rahman
 Email: shahriar.env12@gmail.com'''
 
