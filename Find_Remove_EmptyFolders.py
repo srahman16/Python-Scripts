@@ -15,7 +15,15 @@ def get_empty_folders(directory):
     return empty_folders
 
 directory = r"X:\Prefire"
+output_file = os.path.join(directory, "empty_folders.txt")
+
 empty_folders = get_empty_folders(directory)
 
+with open(output_file, "w") as f:
+    for folder in empty_folders:
+        f.write(folder + "\n")
+
 for folder in empty_folders:
-    print(folder)
+    os.rmdir(folder)
+
+print(f"Empty folders have been listed in {output_file} and deleted.")
