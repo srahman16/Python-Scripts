@@ -1,5 +1,5 @@
 '''
-Title: Rebuilding PDF from a Big PDF (with missing images/fonts and with issues
+Title: Rebuilding PDF from a Big PDF (with missing images/fonts and with issues)
 Author: Shahriar Rahman
 Version: v5
 Date: 3 August 2025
